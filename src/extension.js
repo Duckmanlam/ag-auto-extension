@@ -150,28 +150,42 @@ function resolveClickPatternState(context, configuredPatterns, options = {}) {
 
 
 
+// Cache HTML settings để không phải render lại mỗi lần mở
+let _cachedSettingsHtml = null;
+let _cachedSettingsKey = '';
+
+function buildSettingsCacheKey(context, config, languageOverride) {
+    const lang = languageOverride || config.get('language', 'vi');
+    const patterns = JSON.stringify(context.globalState.get('disabledClickPatterns', []));
+    return `${_autoAcceptEnabled}|${_httpScrollEnabled}|${lang}|${config.get('clickIntervalMs',1000)}|${config.get('scrollPauseMs',7000)}|${config.get('scrollIntervalMs',500)}|${patterns}|${_actualPort}|${isScriptInjected()}`;
+}
+
 async function renderSettingsPanel(panel, context, assets = {}, languageOverride) {
     const config = vscode.workspace.getConfiguration('ag-auto');
-    const configuredPatterns = config.get('clickPatterns', ['Allow', 'Always Allow', 'Run', 'Keep Waiting', 'Accept', 'Approve', 'Always Approve', 'Approve Once', 'Allow Session']);
-    const patternState = resolveClickPatternState(context, configuredPatterns, { mergeDefaults: true });
-
-    panel.webview.html = buildSettingsHtmlV85({
-        enabled: _autoAcceptEnabled,
-        scrollEnabled: _httpScrollEnabled,
-        scrollPauseMs: config.get('scrollPauseMs', 7000),
-        scrollIntervalMs: config.get('scrollIntervalMs', 500),
-        clickIntervalMs: config.get('clickIntervalMs', 1000),
-        clickPatterns: patternState.mergedPatterns,
-        disabledClickPatterns: patternState.disabledPats,
-        clickLimits: context.globalState.get('clickLimits', {}),
-        language: languageOverride || config.get('language', 'vi'),
-        clickStats: _clickStats,
-        totalClicks: _totalClicks,
-        version: context.extension?.packageJSON?.version || '0.0.0',
-        serverPort: _actualPort || 0,
-        scriptInjected: isScriptInjected(),
-        serverStartedAt: _serverStartedAt || Date.now()
-    });
+    const cacheKey = buildSettingsCacheKey(context, config, languageOverride);
+    if (!_cachedSettingsHtml || _cachedSettingsKey !== cacheKey) {
+        const configuredPatterns = config.get('clickPatterns', ['Allow', 'Always Allow', 'Run', 'Keep Waiting', 'Accept', 'Approve', 'Always Approve', 'Approve Once', 'Allow Session']);
+        const patternState = resolveClickPatternState(context, configuredPatterns, { mergeDefaults: true });
+        _cachedSettingsHtml = buildSettingsHtmlV85({
+            enabled: _autoAcceptEnabled,
+            scrollEnabled: _httpScrollEnabled,
+            scrollPauseMs: config.get('scrollPauseMs', 7000),
+            scrollIntervalMs: config.get('scrollIntervalMs', 500),
+            clickIntervalMs: config.get('clickIntervalMs', 1000),
+            clickPatterns: patternState.mergedPatterns,
+            disabledClickPatterns: patternState.disabledPats,
+            clickLimits: context.globalState.get('clickLimits', {}),
+            language: languageOverride || config.get('language', 'vi'),
+            clickStats: _clickStats,
+            totalClicks: _totalClicks,
+            version: context.extension?.packageJSON?.version || '0.0.0',
+            serverPort: _actualPort || 0,
+            scriptInjected: isScriptInjected(),
+            serverStartedAt: _serverStartedAt || Date.now()
+        });
+        _cachedSettingsKey = cacheKey;
+    }
+    panel.webview.html = _cachedSettingsHtml;
 }
 
 
@@ -1657,6 +1671,7 @@ if ($global:clicked) { Write-Output 'CLICKED' }
                     } catch (e) {
                         await context.globalState.update('language', msg.data.language);
                     }
+                    _cachedSettingsHtml = null;
                     writeConfigJson(context);
                     updateStatusBarItem();
                     startCommandsLoop();
