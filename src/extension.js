@@ -56,7 +56,10 @@ function writeFileElevated(filePath, content) {
 /**
  * Tìm file workbench.html của VS Code
  */
+let _cachedWorkbenchPath = undefined;
 function getWorkbenchPath() {
+    if (_cachedWorkbenchPath !== undefined) return _cachedWorkbenchPath;
+    
     const appRoot = vscode.env.appRoot;
     console.log('[AG Auto] appRoot:', appRoot);
 
@@ -72,11 +75,30 @@ function getWorkbenchPath() {
         console.log('[AG Auto] Thử:', p, '->', fs.existsSync(p) ? 'TÌM THẤY!' : 'không có');
         if (fs.existsSync(p)) return p;
     }
-    // Fallback: tìm bằng đệ quy với depth lớn hơn
-    console.log('[AG Auto] Không tìm thấy trong candidates, thử tìm đệ quy...');
+    // Fallback: tìm bằng lệnh find (nhanh hơn JS đệ quy rất nhiều)
+    console.log('[AG Auto] Không tìm thấy trong candidates, thử tìm đệ quy nhanh...');
     const outDir = path.join(appRoot, 'out');
-    const found = findFileRecursive(outDir, 'workbench.html', 6);
+    
+    let found = null;
+    if (process.platform !== 'win32') {
+        try {
+            const cp = require('child_process');
+            // Giới hạn maxdepth 6
+            const result = cp.execSync(`find "${outDir}" -maxdepth 6 -name "workbench.html" | head -n 1`, { encoding: 'utf8', timeout: 2000 });
+            if (result && result.trim()) {
+                found = result.trim();
+            }
+        } catch (e) {
+            console.log('[AG Auto] Lỗi khi chạy lệnh find:', e.message);
+        }
+    }
+    
+    if (!found) {
+        found = findFileRecursive(outDir, 'workbench.html', 5); // giảm xuống 5 để đỡ lag trên Win
+    }
+    
     console.log('[AG Auto] Kết quả tìm đệ quy:', found || 'KHÔNG TÌM THẤY');
+    _cachedWorkbenchPath = found;
     return found;
 }
 
@@ -275,6 +297,7 @@ function hasValidHtmlInjection(html) {
  * Inject script vào workbench — thử nhiều cách để tương thích mọi phiên bản
  */
 function installScript(context) {
+    clearInjectionCache();
     console.log('[AG Auto] installScript() đang chạy...');
     const wbPath = getWorkbenchPath();
     if (!wbPath) {
@@ -1282,7 +1305,9 @@ function startCommandsLoop() {
  * Check if the inject markers actually exist in workbench.html
  * Returns false if Antigravity updated and overwrote the files
  */
+let _cachedScriptInjected = null;
 function isScriptInjected() {
+    if (_cachedScriptInjected !== null) return _cachedScriptInjected;
     try {
         const wbPath = getWorkbenchPath();
         if (!wbPath) return false;
@@ -1291,11 +1316,18 @@ function isScriptInjected() {
         const scriptPath = path.join(wbDir, 'ag-auto-script.js');
         if (!hasValidHtmlInjection(html) || !fs.existsSync(scriptPath)) return false;
         const script = fs.readFileSync(scriptPath, 'utf8');
-        return script.length > 1000 && script.includes('window._agAutoLoaded');
+        const injected = script.length > 1000 && script.includes('window._agAutoLoaded');
+        _cachedScriptInjected = injected;
+        return injected;
     } catch (e) {
         console.log('[AG Auto] Cannot check inject status:', e.message);
+        _cachedScriptInjected = false;
         return false;
     }
+}
+
+function clearInjectionCache() {
+    _cachedScriptInjected = null;
 }
 
 // =============================================================
