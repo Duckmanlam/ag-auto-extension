@@ -181,27 +181,40 @@ Mặc định **OFF**: `Accept all` (bật thủ công khi cần)
 
 ---
 
-## Cách sử dụng
+## Cách sử dụng / Hướng dẫn chạy code
 
-### Cài đặt
-1. Mở Antigravity / VS Code
-2. `Ctrl+Shift+P` → `Extensions: Install from VSIX...`
-3. Chọn file `.vsix` → Cài đặt → **Reload Window**
-4. Extension tự inject script + **auto-reload** lần đầu
+### Cách 1: Cài đặt trực tiếp từ source code (Khuyên dùng cho Antigravity IDE)
+Nếu bạn có source code, cách nhanh nhất là copy thẳng vào thư mục cài đặt extension của Antigravity IDE:
+1. Mở Terminal.
+2. Xóa bản cũ (nếu có):
+   ```bash
+   rm -rf ~/.antigravity-ide/extensions/duckmanlam.duckmanlam-auto-vip*
+   rm -rf ~/.antigravity/extensions/duckmanlam.duckmanlam-auto-vip*
+   ```
+3. Copy source code vào đúng thư mục:
+   ```bash
+   cp -r /đường/dẫn/đến/thư/mục/source ~/.antigravity-ide/extensions/duckmanlam.duckmanlam-auto-vip-1.0.0
+   cp -r /đường/dẫn/đến/thư/mục/source ~/.antigravity/extensions/duckmanlam.duckmanlam-auto-vip-1.0.0
+   ```
+4. Mở Antigravity IDE, nhấn `Cmd + Shift + P` (Mac) hoặc `Ctrl + Shift + P` (Win) -> Gõ **`Reload Window`** và ấn Enter.
 
-> **Linux**: lần đầu inject sẽ hiện hộp thoại nhập mật khẩu — chỉ cần nhập 1 lần.
+### Cách 2: Cài đặt từ file `.vsix`
+1. Build file `.vsix` (nếu chưa có): Mở Terminal tại thư mục source code, chạy lệnh `npx -y @vscode/vsce package`.
+2. Mở Antigravity / VS Code.
+3. Nhấn `Cmd+Shift+P` (hoặc `Ctrl+Shift+P`) → Chọn `Extensions: Install from VSIX...`
+4. Chọn file `.vsix` vừa build → Cài đặt → **Reload Window**.
+5. Extension sẽ tự động inject script và **auto-reload** ở lần đầu tiên.
 
-### Mở Settings
-- Click **"Accept ON"** hoặc **"Scroll ON"** trên Status Bar (góc dưới phải)
-- Hoặc `Ctrl+Shift+P` → `AG Auto: Open Settings`
+> **Lưu ý trên Mac/Linux**: Quá trình inject script lần đầu có thể yêu cầu nhập mật khẩu máy tính để cấp quyền ghi file vào hệ thống.
 
-### Sử dụng
-- **Toggle ON/OFF**: Gạt switch → tức thì, không cần Save
-- **Đổi patterns/settings**: Chỉnh thông số → nhấn **Save & Apply**
-- **Reload thủ công**: Nhấn nút **Reload** khi cần
+### Hướng dẫn mở Settings (Bảng điều khiển)
+Bạn có thể mở giao diện cài đặt bằng **1 trong 3 cách**:
+- **Cách 1**: Click chuột vào chữ **`✓ Accept ON`** hoặc **`✓ Scroll ON`** trên Status Bar (góc dưới cùng bên phải IDE).
+- **Cách 2**: Nhấn `Cmd + Shift + P` → Gõ `AG Auto: Open Settings`.
+- **Cách 3**: Nhấn `Cmd + J` để mở Panel bên dưới (cùng chỗ với Terminal/Output) → Chọn tab **AG Auto Settings** (có icon 🦆).
 
 ### Gỡ bỏ
-`Ctrl+Shift+P` → `AG Auto: Disable` → **Reload Window**
+Nhấn `Cmd + Shift + P` → Gõ `AG Auto: Disable (Remove Script)` → Chờ thông báo thành công và **Reload Window**.
 
 ---
 
@@ -219,7 +232,12 @@ Mặc định **OFF**: `Accept all` (bật thủ công khi cần)
 
 ## Changelog
 
-### v9.6.4 (Latest)
+### Bản VIP Mới Nhất (Fix Lỗi Panel & Command)
+- **Fix triệt để lỗi `command 'ag-auto.openSettings' not found`**: Đảm bảo các lệnh luôn được đăng ký trước tiên khi extension khởi động.
+- **Fix lỗi hiển thị Settings Panel**: Cấu hình lại chuẩn xác `viewsContainers` và `views` trong `package.json` và đăng ký `WebviewViewProvider` để panel "AG Auto Settings" xuất hiện mượt mà trong thanh Bottom Panel của IDE.
+- **Tự động click Accept mượt mà**: Hoàn thiện logic tự động click nút Submit trên các hộp thoại xin quyền.
+
+### v9.6.4 (Core Base)
 - **Fix lỗi ON nhưng không click**: tự reset HTTP IPC server nếu server object tồn tại nhưng chưa listen port, tránh `Port scan: no server found`.
 - **Fix nút Allow permission JavaScript**: nhận diện card `Agent needs permission to execute JavaScript...` khi chạy landing page và click đúng nút Allow.
 - **Fix click nhầm Run and Debug**: chặn Activity Bar / navigation controls để không nhầm với nút Run trong chat.
