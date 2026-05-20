@@ -36,17 +36,17 @@
         "viewsContainers": {
             "panel": [
                 {
-                    "id": "duckmanlamSettingsContainer",
-                    "title": "⚡ Duckmanlam Auto VIP",
+                    "id": "ag-auto-settings",
+                    "title": "AG Auto Settings",
                     "icon": "media/icon.png"
                 }
             ]
         },
         "views": {
-            "duckmanlamSettingsContainer": [
+            "ag-auto-settings": [
                 {
                     "type": "webview",
-                    "id": "duckmanlam-auto-vip.settingsPanel",
+                    "id": "ag-auto.settingsView",
                     "name": "Settings",
                     "visibility": "visible"
                 }
