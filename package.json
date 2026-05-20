@@ -33,12 +33,21 @@
                 "title": "AG Auto: Open Settings"
             }
         ],
-        "views": {
+        "viewsContainers": {
             "panel": [
+                {
+                    "id": "duckmanlamSettingsContainer",
+                    "title": "⚡ Duckmanlam Auto VIP",
+                    "icon": "media/icon.png"
+                }
+            ]
+        },
+        "views": {
+            "duckmanlamSettingsContainer": [
                 {
                     "type": "webview",
                     "id": "duckmanlam-auto-vip.settingsPanel",
-                    "name": "⚡ Duckmanlam Auto VIP",
+                    "name": "Settings",
                     "visibility": "visible"
                 }
             ]
