@@ -1,0 +1,103 @@
+{
+    "name": "duckmanlam-auto-vip",
+    "displayName": "Duckmanlam Auto VIP",
+    "description": "Bản VIP riêng tư: Auto-click Run/Allow buttons và tự động cuộn giao diện Antigravity chat.",
+    "version": "1.0.0",
+    "icon": "media/icon.png",
+    "publisher": "duckmanlam",
+    "engines": {
+        "vscode": "^1.60.0"
+    },
+    "extensionKind": [
+        "ui"
+    ],
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./src/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "ag-auto.enable",
+                "title": "AG Auto: Enable (Inject Script)"
+            },
+            {
+                "command": "ag-auto.disable",
+                "title": "AG Auto: Disable (Remove Script)"
+            },
+            {
+                "command": "ag-auto.openSettings",
+                "title": "AG Auto: Open Settings"
+            }
+        ],
+        "configuration": {
+            "title": "AG Auto Click & Scroll",
+            "properties": {
+                "ag-auto.enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable or disable Auto Click and Auto Scroll"
+                },
+                "ag-auto.scrollEnabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable or disable Auto Scroll"
+                },
+                "ag-auto.language": {
+                    "type": "string",
+                    "enum": [
+                        "vi",
+                        "en",
+                        "zh"
+                    ],
+                    "enumDescriptions": [
+                        "Vietnamese",
+                        "English",
+                        "Chinese"
+                    ],
+                    "default": "vi",
+                    "description": "Display language used in the Settings panel"
+                },
+                "ag-auto.scrollPauseMs": {
+                    "type": "number",
+                    "default": 7000,
+                    "description": "Pause duration after a manual scroll action, in milliseconds"
+                },
+                "ag-auto.scrollIntervalMs": {
+                    "type": "number",
+                    "default": 500,
+                    "description": "Auto-scroll polling interval in milliseconds"
+                },
+                "ag-auto.clickIntervalMs": {
+                    "type": "number",
+                    "default": 1000,
+                    "description": "Auto-click polling interval in milliseconds"
+                },
+                "ag-auto.clickPatterns": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [
+                        "Allow",
+                        "Always Allow",
+                        "Run",
+                        "Keep Waiting",
+                        "Accept",
+                        "Approve",
+                        "Always Approve",
+                        "Approve Once",
+                        "Allow Session"
+                    ],
+                    "description": "List of button labels that can be auto-clicked"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "echo ok"
+    }
+}
