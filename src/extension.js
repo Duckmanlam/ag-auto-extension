@@ -516,17 +516,10 @@ const AG_HTTP_PORT_END = 48850;
 let _settingsOpenRequestedThisSession = false;
 let _lastSettingsOpenAt = 0;
 const SETTINGS_OPEN_GUARD_MS = 5000;
-let _promoShownThisSession = false;
-let _promoFallbackScheduled = false;
-const SETTINGS_PANEL_TITLE = 'AG Auto Click & Scroll - Settings';
+const SETTINGS_PANEL_TITLE = 'Duckmanlam Auto VIP - Settings';
 const SETTINGS_PANEL_VIEW_TYPE = 'agAutoSettingsManualOnly';
 const LEGACY_SETTINGS_PANEL_VIEW_TYPES = ['agAutoSettings', 'agAutoSettingsManual', SETTINGS_PANEL_VIEW_TYPE];
 const SUPPRESS_SETTINGS_RESTORE_KEY = 'agSuppressSettingsRestoreUntil';
-const PROMO_DELAY_MS = 30 * 1000;              // 30s after startup
-const PROMO_NOTIFICATION_TIMEOUT_MS = 30 * 1000; // 30s timeout for notification
-const PROMO_AFTER_XEM_NGAY_MS = 6 * 60 * 60 * 1000;  // 6h after "Xem ngay"
-const PROMO_AFTER_DE_SAU_MS = 2 * 60 * 60 * 1000;     // 2h after "De sau"
-const PROMO_FALLBACK_MS = 2 * 60 * 60 * 1000;         // 2h fallback (no click / notify off)
 
 function settingsPanelRecentlyOpened() {
     return _lastSettingsOpenAt > 0 && (Date.now() - _lastSettingsOpenAt) < SETTINGS_OPEN_GUARD_MS;
@@ -563,19 +556,15 @@ async function openSettingsPanel(context, options = {}) {
     _settingsOpenRequestedThisSession = true;
     _lastSettingsOpenAt = Date.now();
 
-    if (options.forceEnableAccept) {
-        ensurePromoAcceptEnabled(context);
-    }
-
     if (_settingsPanel) {
         const existingPanel = _settingsPanel;
         if (typeof existingPanel.visible === 'boolean') {
-            if (!options.scrollToPromo && existingPanel.visible) {
+            if (existingPanel.visible) {
                 existingPanel.dispose();
                 _settingsPanel = null;
                 return;
             }
-        } else if (!options.scrollToPromo) {
+        } else {
             try {
                 existingPanel.reveal(vscode.ViewColumn.One);
                 return;
@@ -584,20 +573,6 @@ async function openSettingsPanel(context, options = {}) {
                 _settingsPanel = null;
             }
         }
-    }
-
-    // If panel exists and we need to scroll to promo, refresh + reveal + send message
-    if (_settingsPanel && options.scrollToPromo) {
-        const panel = _settingsPanel;
-        await renderSettingsPanel(panel, context, {
-            
-            
-        });
-        panel.reveal(vscode.ViewColumn.One);
-        setTimeout(() => {
-            try { panel.webview.postMessage({ command: 'scrollToPromo' }); } catch(e) {}
-        }, 700);
-        return;
     }
 
     const panel = vscode.window.createWebviewPanel(
@@ -621,31 +596,24 @@ async function openSettingsPanel(context, options = {}) {
         }
     });
 
-    renderSettingsPanel(panel, context, { momoQrImageUri, zaloQrImageUri }).catch(error => {
+    renderSettingsPanel(panel, context).catch(error => {
         console.error('[AG Auto] Failed to render settings panel:', error.message);
         panel.webview.html = buildSettingsHtmlV85({
             enabled: true, scrollEnabled: true, scrollPauseMs: 7000, scrollIntervalMs: 500,
             clickIntervalMs: 1000, clickPatterns: ['Allow','Always Allow','Run','Keep Waiting','Accept','Approve','Always Approve','Approve Once','Allow Session'],
             disabledClickPatterns: [], language: 'vi', clickStats: _clickStats, totalClicks: _totalClicks,
             version: context.extension?.packageJSON?.version || '0.0.0',
-            momoQrImageUri, zaloQrImageUri, serverPort: _actualPort || 0, scriptInjected: isScriptInjected(),
-            serverStartedAt: _serverStartedAt || Date.now(), pricingData: pricingDefaults
+            serverPort: _actualPort || 0, scriptInjected: isScriptInjected(),
+            serverStartedAt: _serverStartedAt || Date.now()
         });
     });
-
-    // If opened from promo, scroll to promo section after render
-    if (options.scrollToPromo) {
-        setTimeout(() => {
-            try { panel.webview.postMessage({ command: 'scrollToPromo' }); } catch(e) {}
-        }, 1500);
-    }
 
     // Nhận message từ Webview
     panel.webview.onDidReceiveMessage(async (msg) => {
         if (msg.command === 'changeLang') {
             const cfg = vscode.workspace.getConfiguration('ag-auto');
             await cfg.update('language', msg.lang, vscode.ConfigurationTarget.Global);
-            await renderSettingsPanel(panel, context, { momoQrImageUri, zaloQrImageUri }, msg.lang);
+            await renderSettingsPanel(panel, context, {}, msg.lang);
             return;
         }
         if (msg.command === 'toggle') {

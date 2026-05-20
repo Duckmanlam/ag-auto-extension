@@ -328,4 +328,3 @@ Mặc định **OFF**: `Accept all` (bật thủ công khi cần)
 
 ## License
 
-MIT © [Zixfel](https://github.com/zixfelw)
