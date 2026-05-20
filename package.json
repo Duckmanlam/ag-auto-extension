@@ -34,17 +34,52 @@
             }
         ],
         "configuration": {
-            "title": "AG Auto Click & Scroll",
+            "title": "Duckmanlam Auto VIP",
             "properties": {
                 "ag-auto.enabled": {
                     "type": "boolean",
                     "default": true,
-                    "description": "Enable or disable Auto Click and Auto Scroll"
+                    "description": "🖱️ Bật/tắt Auto Click — tự động nhấn các nút Run, Allow, Accept..."
                 },
                 "ag-auto.scrollEnabled": {
                     "type": "boolean",
                     "default": true,
-                    "description": "Enable or disable Auto Scroll"
+                    "description": "📜 Bật/tắt Auto Scroll — tự động cuộn xuống cuối chat"
+                },
+                "ag-auto.autoHandlePermissions": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "🔐 Tự động xử lý hộp thoại xác nhận quyền (Submit permission dialogs automatically)"
+                },
+                "ag-auto.permissionPreferredChoice": {
+                    "type": "string",
+                    "enum": [
+                        "always_allow",
+                        "allow_once",
+                        "yes"
+                    ],
+                    "enumDescriptions": [
+                        "Yes, and always allow (luôn cho phép)",
+                        "Yes, allow this time (chỉ lần này)",
+                        "Yes (đồng ý)"
+                    ],
+                    "default": "always_allow",
+                    "description": "🎯 Lựa chọn ưu tiên khi xử lý hộp thoại xác nhận quyền"
+                },
+                "ag-auto.startupBehavior": {
+                    "type": "string",
+                    "enum": [
+                        "remember",
+                        "always_on",
+                        "always_off"
+                    ],
+                    "enumDescriptions": [
+                        "Nhớ trạng thái lần trước",
+                        "Luôn bật khi khởi động IDE",
+                        "Luôn tắt khi khởi động IDE"
+                    ],
+                    "default": "remember",
+                    "description": "🚀 Hành vi khi khởi động IDE"
                 },
                 "ag-auto.language": {
                     "type": "string",
@@ -54,27 +89,33 @@
                         "zh"
                     ],
                     "enumDescriptions": [
-                        "Vietnamese",
+                        "Tiếng Việt",
                         "English",
-                        "Chinese"
+                        "中文"
                     ],
                     "default": "vi",
-                    "description": "Display language used in the Settings panel"
+                    "description": "🌐 Ngôn ngữ hiển thị trong Settings panel"
                 },
                 "ag-auto.scrollPauseMs": {
                     "type": "number",
                     "default": 7000,
-                    "description": "Pause duration after a manual scroll action, in milliseconds"
+                    "minimum": 500,
+                    "maximum": 60000,
+                    "description": "⏸️ Thời gian dừng Auto Scroll sau khi bạn cuộn tay (ms)"
                 },
                 "ag-auto.scrollIntervalMs": {
                     "type": "number",
                     "default": 500,
-                    "description": "Auto-scroll polling interval in milliseconds"
+                    "minimum": 100,
+                    "maximum": 5000,
+                    "description": "⚡ Tốc độ quét Auto Scroll (ms) — thấp hơn = mượt hơn"
                 },
                 "ag-auto.clickIntervalMs": {
                     "type": "number",
                     "default": 1000,
-                    "description": "Auto-click polling interval in milliseconds"
+                    "minimum": 200,
+                    "maximum": 120000,
+                    "description": "⚡ Tốc độ quét Auto Click (ms) — cao hơn = có thêm thời gian review"
                 },
                 "ag-auto.clickPatterns": {
                     "type": "array",
@@ -92,7 +133,17 @@
                         "Approve Once",
                         "Allow Session"
                     ],
-                    "description": "List of button labels that can be auto-clicked"
+                    "description": "🎯 Danh sách nhãn nút sẽ được tự động click"
+                },
+                "ag-auto.showStatusBar": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "📊 Hiển thị trạng thái trên thanh Status Bar"
+                },
+                "ag-auto.notifyOnInject": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "🔔 Hiển thị thông báo khi inject script thành công"
                 }
             }
         }
