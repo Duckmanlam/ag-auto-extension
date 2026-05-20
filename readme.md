@@ -15,7 +15,7 @@ Nếu extension giúp ích cho bạn, mời tác giả một ly cà phê nhé! �
 
 ---
 
-# AG Auto Click & Scroll v9.6.4
+# Duckmanlam Auto VIP v9.6.4
 
 **Extension tự động nhấn nút Run, Allow, Allow in workspace, Accept, Accept all và cuộn khung chat Antigravity.**  
 Thiết kế thông minh — Accept chỉ click ở **khung chat**, tuyệt đối không click ở editor.  
@@ -210,11 +210,11 @@ Nếu bạn có source code, cách nhanh nhất là copy thẳng vào thư mục
 ### Hướng dẫn mở Settings (Bảng điều khiển)
 Bạn có thể mở giao diện cài đặt bằng **1 trong 3 cách**:
 - **Cách 1**: Click chuột vào chữ **`✓ Accept ON`** hoặc **`✓ Scroll ON`** trên Status Bar (góc dưới cùng bên phải IDE).
-- **Cách 2**: Nhấn `Cmd + Shift + P` → Gõ `AG Auto: Open Settings`.
-- **Cách 3**: Nhấn `Cmd + J` để mở Panel bên dưới (cùng chỗ với Terminal/Output) → Chọn tab **AG Auto Settings** (có icon 🦆).
+- **Cách 2**: Nhấn `Cmd + Shift + P` → Gõ `Duckmanlam Auto: Open Settings`.
+- **Cách 3**: Nhấn `Cmd + J` để mở Panel bên dưới (cùng chỗ với Terminal/Output) → Chọn tab **Duckmanlam Auto Settings** (có icon 🦆).
 
 ### Gỡ bỏ
-Nhấn `Cmd + Shift + P` → Gõ `AG Auto: Disable (Remove Script)` → Chờ thông báo thành công và **Reload Window**.
+Nhấn `Cmd + Shift + P` → Gõ `Duckmanlam Auto: Disable (Remove Script)` → Chờ thông báo thành công và **Reload Window**.
 
 ---
 

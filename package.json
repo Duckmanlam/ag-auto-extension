@@ -22,22 +22,22 @@
         "commands": [
             {
                 "command": "ag-auto.enable",
-                "title": "AG Auto: Enable (Inject Script)"
+                "title": "Duckmanlam Auto: Enable (Inject Script)"
             },
             {
                 "command": "ag-auto.disable",
-                "title": "AG Auto: Disable (Remove Script)"
+                "title": "Duckmanlam Auto: Disable (Remove Script)"
             },
             {
                 "command": "ag-auto.openSettings",
-                "title": "AG Auto: Open Settings"
+                "title": "Duckmanlam Auto: Open Settings"
             }
         ],
         "viewsContainers": {
             "panel": [
                 {
                     "id": "ag-auto-settings",
-                    "title": "AG Auto Settings",
+                    "title": "Duckmanlam Auto Settings",
                     "icon": "media/icon.png"
                 }
             ]

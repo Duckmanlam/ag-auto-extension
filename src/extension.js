@@ -1,5 +1,5 @@
 // ===========================================================
-// AG Auto Click & Scroll — VS Code Extension
+// Duckmanlam Auto VIP — VS Code Extension
 // ===========================================================
 const vscode = require('vscode');
 const fs = require('fs');
