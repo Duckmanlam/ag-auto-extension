@@ -1338,6 +1338,124 @@ function activate(context) {
     console.log('[AG Auto] Extension dang khoi dong (v' + _extVersion + ')...');
     _extensionContext = context;
 
+    // --- REGISTER COMMANDS FIRST (Ensures they always work even if something fails later) ---
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ag-auto.enable', async () => {
+            const success = installScript(context);
+            if (success) {
+                clearV8CodeCache();
+                updateProductChecksums();
+                await context.globalState.update('ag-injected-version', context.extension?.packageJSON?.version || '0');
+                updateStatusBarItem();
+                vscode.window.setStatusBarMessage('[AG Auto] Script injected. Reloading Antigravity...', 3000);
+                setTimeout(() => {
+                    vscode.commands.executeCommand('workbench.action.reloadWindow');
+                }, 800);
+            } else {
+                vscode.window.showErrorMessage('[AG Auto] Inject script thất bại. Hãy thử mở Antigravity bằng quyền Administrator rồi chạy lại.');
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ag-auto.disable', async () => {
+            const success = uninstallScript();
+            if (success) {
+                clearV8CodeCache();
+                updateProductChecksums();
+                updateStatusBarItem();
+                const choice = await vscode.window.showInformationMessage(
+                    '[AG Auto] Script removed! Reload VS Code to complete.',
+                    'Reload Now'
+                );
+                if (choice === 'Reload Now') {
+                    vscode.commands.executeCommand('workbench.action.reloadWindow');
+                }
+            } else {
+                vscode.window.showErrorMessage('[AG Auto] workbench.html not found!');
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('ag-auto.openSettings', async () => {
+            // Mở trực tiếp tab Settings native của VS Code
+            await vscode.commands.executeCommand('workbench.action.openSettings', '@ext:duckmanlam.duckmanlam-auto-vip');
+        })
+    );
+
+    // --- REGISTER WEBVIEW VIEW PROVIDER FOR SETTINGS PANEL ---
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider('ag-auto.settingsView', {
+            resolveWebviewView(webviewView, contextObj, token) {
+                webviewView.webview.options = { enableScripts: true };
+                
+                // Construct config for the HTML
+                const cfg = {
+                    version: _extVersion,
+                    enabled: _autoAcceptEnabled,
+                    scrollEnabled: _httpScrollEnabled,
+                    scrollPauseMs: _httpScrollConfig.pauseScrollMs || 7000,
+                    scrollIntervalMs: _httpScrollConfig.scrollIntervalMs || 500,
+                    clickIntervalMs: _httpScrollConfig.clickIntervalMs || 2000,
+                    clickPatterns: _httpClickPatterns || [],
+                    disabledClickPatterns: _httpClickPatternsDisabled || [],
+                    clickLimits: _httpClickLimits || {},
+                    clickStats: _clickStats || {},
+                    totalClicks: _totalClicks || 0,
+                    scriptInjected: isScriptInjected(),
+                    serverPort: _actualPort || 0,
+                    serverStartedAt: _serverStartedAt || Date.now(),
+                    language: 'vi' // Default to Vietnamese, could read from global config
+                };
+                
+                webviewView.webview.html = buildSettingsHtmlV85(cfg);
+                
+                webviewView.webview.onDidReceiveMessage(async (msg) => {
+                    if (msg.command === 'toggle') {
+                        _autoAcceptEnabled = msg.enabled;
+                        context.globalState.update('startupEnabledPreference', _autoAcceptEnabled);
+                        syncStateToRenderer();
+                    } else if (msg.command === 'scrollToggle') {
+                        _httpScrollEnabled = msg.enabled;
+                        context.globalState.update('scrollEnabledPreference', _httpScrollEnabled);
+                        syncStateToRenderer();
+                    } else if (msg.command === 'save') {
+                        _autoAcceptEnabled = msg.data.enabled;
+                        _httpScrollEnabled = msg.data.scrollEnabled !== false;
+                        _httpScrollConfig.pauseScrollMs = msg.data.scrollPauseMs;
+                        _httpScrollConfig.scrollIntervalMs = msg.data.scrollIntervalMs;
+                        _httpScrollConfig.clickIntervalMs = msg.data.clickIntervalMs;
+                        _httpClickPatterns = msg.data.clickPatterns;
+                        _httpClickPatternsDisabled = msg.data.disabledClickPatterns;
+                        _httpClickLimits = msg.data.clickLimits || {};
+                        
+                        context.globalState.update('startupEnabledPreference', _autoAcceptEnabled);
+                        context.globalState.update('scrollEnabledPreference', _httpScrollEnabled);
+                        
+                        writeConfigJson(context);
+                        syncStateToRenderer();
+                    } else if (msg.command === 'getStats') {
+                        webviewView.webview.postMessage({ command: 'statsUpdate', stats: _clickStats, total: _totalClicks });
+                    } else if (msg.command === 'getClickLog') {
+                        webviewView.webview.postMessage({ command: 'clickLogUpdate', log: _clickLog });
+                    } else if (msg.command === 'resetStats') {
+                        _clickStats = {};
+                        _totalClicks = 0;
+                        context.globalState.update('clickStats', _clickStats);
+                        context.globalState.update('totalClicks', _totalClicks);
+                    } else if (msg.command === 'clearClickLog') {
+                        _clickLog = [];
+                        context.globalState.update('clickLog', _clickLog);
+                    } else if (msg.command === 'reload') {
+                        vscode.commands.executeCommand('workbench.action.reloadWindow');
+                    }
+                });
+            }
+        })
+    );
+
+
     // Restore persisted click stats
     _clickStats = context.globalState.get('clickStats', {});
     _totalClicks = context.globalState.get('totalClicks', 0);
@@ -1578,175 +1696,7 @@ if ($global:clicked) { Write-Output 'CLICKED' }
         })
     );
 
-    // Command: Enable
-    context.subscriptions.push(
-        vscode.commands.registerCommand('ag-auto.enable', async () => {
-            const success = installScript(context);
-            if (success) {
-                clearV8CodeCache();
-                updateProductChecksums();
-                await context.globalState.update('ag-injected-version', context.extension?.packageJSON?.version || '0');
-                updateStatusBarItem();
-                vscode.window.setStatusBarMessage('[AG Auto] Script injected. Reloading Antigravity...', 3000);
-                setTimeout(() => {
-                    vscode.commands.executeCommand('workbench.action.reloadWindow');
-                }, 800);
-            } else {
-                vscode.window.showErrorMessage('[AG Auto] Inject script thất bại. Hãy thử mở Antigravity bằng quyền Administrator rồi chạy lại.');
-            }
-        })
-    );
 
-    // Command: Disable
-    context.subscriptions.push(
-        vscode.commands.registerCommand('ag-auto.disable', async () => {
-            const success = uninstallScript();
-            if (success) {
-                clearV8CodeCache();
-                updateProductChecksums();
-                updateStatusBarItem();
-                const choice = await vscode.window.showInformationMessage(
-                    '[AG Auto] Script removed! Reload VS Code to complete.',
-                    'Reload Now'
-                );
-                if (choice === 'Reload Now') {
-                    vscode.commands.executeCommand('workbench.action.reloadWindow');
-                }
-            } else {
-                vscode.window.showErrorMessage('[AG Auto] workbench.html not found!');
-            }
-        })
-    );
-
-    // Command: Open Settings
-    context.subscriptions.push(
-        vscode.commands.registerCommand('ag-auto.openSettings', async () => {
-            // Mở bottom panel trước, sau đó reveal tab settings
-            await vscode.commands.executeCommand('duckmanlam-auto-vip.settingsPanel.focus');
-        })
-    );
-
-    // Đăng ký WebviewViewProvider cho Bottom Panel
-    const settingsViewProvider = {
-        resolveWebviewView(webviewView) {
-            webviewView.webview.options = {
-                enableScripts: true,
-                localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'media')]
-            };
-
-            // Render HTML
-            const renderView = async () => {
-                const config = vscode.workspace.getConfiguration('ag-auto');
-                const cacheKey = buildSettingsCacheKey(context, config, null);
-                
-                if (!_cachedSettingsHtml || _cachedSettingsKey !== cacheKey) {
-                    const configuredPatterns = config.get('clickPatterns', ['Allow', 'Always Allow', 'Run', 'Keep Waiting', 'Accept', 'Approve', 'Always Approve', 'Approve Once', 'Allow Session']);
-                    const patternState = resolveClickPatternState(context, configuredPatterns, { mergeDefaults: true });
-                    
-                    _cachedSettingsHtml = buildSettingsHtmlV85({
-                        enabled: _autoAcceptEnabled,
-                        scrollEnabled: _httpScrollEnabled,
-                        scrollPauseMs: config.get('scrollPauseMs', 7000),
-                        scrollIntervalMs: config.get('scrollIntervalMs', 500),
-                        clickIntervalMs: config.get('clickIntervalMs', 1000),
-                        clickPatterns: patternState.mergedPatterns,
-                        disabledClickPatterns: patternState.disabledPats,
-                        clickLimits: context.globalState.get('clickLimits', {}),
-                        language: config.get('language', 'vi'),
-                        clickStats: _clickStats,
-                        totalClicks: _totalClicks,
-                        version: context.extension?.packageJSON?.version || '0.0.0',
-                        serverPort: _actualPort || 0,
-                        scriptInjected: isScriptInjected(),
-                        serverStartedAt: _serverStartedAt || Date.now()
-                    });
-                    _cachedSettingsKey = cacheKey;
-                }
-                
-                webviewView.webview.html = _cachedSettingsHtml;
-            };
-
-            renderView();
-
-            // Xử lý message từ webview (giống settings panel cũ)
-            webviewView.webview.onDidReceiveMessage(async (msg) => {
-                if (msg.command === 'changeLang') {
-                    const cfg = vscode.workspace.getConfiguration('ag-auto');
-                    await cfg.update('language', msg.lang, vscode.ConfigurationTarget.Global);
-                    renderView();
-                    return;
-                }
-                if (msg.command === 'toggle') {
-                    _autoAcceptEnabled = msg.enabled;
-                    await context.globalState.update('startupEnabledPreference', _autoAcceptEnabled);
-                    writeConfigJson(context);
-                    updateStatusBarItem();
-                    return;
-                }
-                if (msg.command === 'scrollToggle') {
-                    _httpScrollEnabled = msg.enabled;
-                    await context.globalState.update('scrollEnabledPreference', _httpScrollEnabled);
-                    writeConfigJson(context);
-                    updateStatusBarItem();
-                    return;
-                }
-                if (msg.command === 'save') {
-                    _autoAcceptEnabled = msg.data.enabled;
-                    _httpClickPatterns = msg.data.clickPatterns.filter(p => !msg.data.disabledClickPatterns.includes(p));
-                    _httpScrollConfig = {
-                        pauseScrollMs: msg.data.scrollPauseMs || 5000,
-                        scrollIntervalMs: msg.data.scrollIntervalMs || 500,
-                        clickIntervalMs: msg.data.clickIntervalMs || 2000
-                    };
-                    await context.globalState.update('disabledClickPatterns', msg.data.disabledClickPatterns);
-                    await context.globalState.update('clickLimits', msg.data.clickLimits || {});
-                    await context.globalState.update('startupEnabledPreference', _autoAcceptEnabled);
-                    try {
-                        const cfg = vscode.workspace.getConfiguration('ag-auto');
-                        await cfg.update('clickPatterns', msg.data.clickPatterns, vscode.ConfigurationTarget.Global);
-                        await cfg.update('clickIntervalMs', msg.data.clickIntervalMs || 2000, vscode.ConfigurationTarget.Global);
-                        await cfg.update('scrollPauseMs', msg.data.scrollPauseMs || 5000, vscode.ConfigurationTarget.Global);
-                        await cfg.update('scrollIntervalMs', msg.data.scrollIntervalMs || 500, vscode.ConfigurationTarget.Global);
-                        await cfg.update('language', msg.data.language, vscode.ConfigurationTarget.Global);
-                    } catch (e) {
-                        await context.globalState.update('language', msg.data.language);
-                    }
-                    _cachedSettingsHtml = null;
-                    writeConfigJson(context);
-                    updateStatusBarItem();
-                    startCommandsLoop();
-                    vscode.window.setStatusBarMessage('$(check) [AG Auto] Saved!', 3000);
-                    return;
-                }
-                if (msg.command === 'reload') {
-                    vscode.commands.executeCommand('workbench.action.reloadWindow');
-                    return;
-                }
-                if (msg.command === 'getStats') {
-                    webviewView.webview.postMessage({ command: 'statsUpdated', clickStats: _clickStats, totalClicks: _totalClicks });
-                    return;
-                }
-                if (msg.command === 'getClickLog') {
-                    webviewView.webview.postMessage({ command: 'clickLogUpdate', log: _clickLog });
-                    return;
-                }
-            });
-
-            // Refresh stats khi view hiện ra
-            webviewView.onDidChangeVisibility(() => {
-                if (webviewView.visible) {
-                    webviewView.webview.postMessage({ command: 'statsUpdated', clickStats: _clickStats, totalClicks: _totalClicks });
-                    webviewView.webview.postMessage({ command: 'clickLogUpdate', log: _clickLog });
-                }
-            });
-        }
-    };
-
-    context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider('duckmanlam-auto-vip.settingsPanel', settingsViewProvider, {
-            webviewOptions: { retainContextWhenHidden: true }
-        })
-    );
 }
 
 function deactivate() {
