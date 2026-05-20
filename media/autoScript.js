@@ -818,7 +818,7 @@
     }, 2000);
     window._agToolIntervals.push(_agConfigReload);
 
-    var REJECT_WORDS = ['Reject', 'Deny', 'Cancel', 'Dismiss', 'Don\'t Allow', 'Decline'];
+    var REJECT_WORDS = ['Reject', 'Deny', 'Cancel', 'Dismiss', 'Don\'t Allow', 'Decline', 'Discard', 'Discard Changes', 'No'];
     var EDITOR_SKIP_WORDS = ['Accept Changes', 'Accept All', 'Accept Incoming', 'Accept Current', 'Accept Both', 'Accept Combination'];
     var _clicked = new Map();
     var _clickedGcTimer = setInterval(function () {
@@ -1158,8 +1158,10 @@
                         acceptBtn.closest('.view-zones') ||
                         acceptBtn.closest('.merge-editor-view')
                     )) {
-                        console.log('[AG Auto] Blocked Accept inside editor: [' + acceptText.substring(0, 20) + ']');
-                        continue;
+                        if (!_agHasDenySibling(acceptBtn, 4)) {
+                            console.log('[AG Auto] Blocked Accept inside editor (no deny sibling): [' + acceptText.substring(0, 20) + ']');
+                            continue;
+                        }
                     }
 
                     if (acceptBtn.classList && (acceptBtn.classList.contains('diff-hunk-button') || acceptBtn.classList.contains('revert'))) {
