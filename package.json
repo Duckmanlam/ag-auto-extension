@@ -153,7 +153,8 @@
                         "Allow Session",
                         "Yes",
                         "Yes, and always allow",
-                        "Yes, allow this time"
+                        "Yes, allow this time",
+                        "Submit"
                     ],
                     "description": "🎯 Danh sách nhãn nút sẽ được tự động click"
                 },

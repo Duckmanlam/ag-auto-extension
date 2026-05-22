@@ -147,7 +147,7 @@ function normalizePatternList(patterns) {
 }
 
 function resolveClickPatternState(context, configuredPatterns, options = {}) {
-    const defaultPatterns = ['Run', 'Allow', 'Accept', 'Always Allow', 'Keep Waiting', 'Retry', 'Allow Once', 'Allow This Con', 'Allow in Workspace', 'Accept all', 'Approve', 'Always Approve', 'Approve Once', 'Allow Session', 'Yes', 'Yes, and always allow', 'Yes, allow this time'];
+    const defaultPatterns = ['Run', 'Allow', 'Accept', 'Always Allow', 'Keep Waiting', 'Retry', 'Allow Once', 'Allow This Con', 'Allow in Workspace', 'Accept all', 'Approve', 'Always Approve', 'Approve Once', 'Allow Session', 'Yes', 'Yes, and always allow', 'Yes, allow this time', 'Submit'];
     const defaultOff = ['Accept all'];
     const disabledPats = normalizePatternList(getDisabledClickPatterns(context));
     const mergedPatterns = normalizePatternList(configuredPatterns);
@@ -186,7 +186,7 @@ async function renderSettingsPanel(panel, context, assets = {}, languageOverride
     const config = vscode.workspace.getConfiguration('ag-auto');
     const cacheKey = buildSettingsCacheKey(context, config, languageOverride);
     if (!_cachedSettingsHtml || _cachedSettingsKey !== cacheKey) {
-        const configuredPatterns = config.get('clickPatterns', ['Allow', 'Always Allow', 'Run', 'Keep Waiting', 'Accept', 'Approve', 'Always Approve', 'Approve Once', 'Allow Session', 'Yes', 'Yes, and always allow', 'Yes, allow this time']);
+        const configuredPatterns = config.get('clickPatterns', ['Allow', 'Always Allow', 'Run', 'Keep Waiting', 'Accept', 'Approve', 'Always Approve', 'Approve Once', 'Allow Session', 'Yes', 'Yes, and always allow', 'Yes, allow this time', 'Submit']);
         const patternState = resolveClickPatternState(context, configuredPatterns, { mergeDefaults: true });
         _cachedSettingsHtml = buildSettingsHtmlV85({
             enabled: _autoAcceptEnabled,
@@ -219,7 +219,7 @@ function buildScriptContent(context) {
     const pauseMs = config.get('scrollPauseMs', 7000);
     const scrollMs = config.get('scrollIntervalMs', 500);
     const clickMs = config.get('clickIntervalMs', 1000);
-    const allPatterns = config.get('clickPatterns', ['Allow', 'Always Allow', 'Run', 'Keep Waiting', 'Accept all', 'Accept', 'Approve', 'Always Approve', 'Approve Once', 'Allow Session', 'Yes', 'Yes, and always allow', 'Yes, allow this time']);
+    const allPatterns = config.get('clickPatterns', ['Allow', 'Always Allow', 'Run', 'Keep Waiting', 'Accept all', 'Accept', 'Approve', 'Always Approve', 'Approve Once', 'Allow Session', 'Yes', 'Yes, and always allow', 'Yes, allow this time', 'Submit']);
     const patternState = resolveClickPatternState(context, allPatterns);
     const patterns = patternState.safePatterns;
     const enabled = context.globalState.get('startupEnabledPreference', true);
@@ -255,7 +255,7 @@ function writeConfigJson(context) {
         if (!wbPath) return;
         const wbDir = path.dirname(wbPath);
         const config = vscode.workspace.getConfiguration('ag-auto');
-        const allPatterns = config.get('clickPatterns', ['Allow', 'Always Allow', 'Run', 'Keep Waiting', 'Accept', 'Approve', 'Always Approve', 'Approve Once', 'Allow Session', 'Yes', 'Yes, and always allow', 'Yes, allow this time']);
+        const allPatterns = config.get('clickPatterns', ['Allow', 'Always Allow', 'Run', 'Keep Waiting', 'Accept', 'Approve', 'Always Approve', 'Approve Once', 'Allow Session', 'Yes', 'Yes, and always allow', 'Yes, allow this time', 'Submit']);
         const patternState = resolveClickPatternState(context, allPatterns);
         const enabled = _autoAcceptEnabled;
         const configData = JSON.stringify({
@@ -638,7 +638,7 @@ async function openSettingsPanel(context, options = {}) {
         console.error('[AG Auto] Failed to render settings panel:', error.message);
         panel.webview.html = buildSettingsHtmlV85({
             enabled: true, scrollEnabled: true, scrollPauseMs: 7000, scrollIntervalMs: 500,
-            clickIntervalMs: 1000, clickPatterns: ['Allow','Always Allow','Run','Keep Waiting','Accept','Approve','Always Approve','Approve Once','Allow Session', 'Yes', 'Yes, and always allow', 'Yes, allow this time'],
+            clickIntervalMs: 1000, clickPatterns: ['Allow','Always Allow','Run','Keep Waiting','Accept','Approve','Always Approve','Approve Once','Allow Session', 'Yes', 'Yes, and always allow', 'Yes, allow this time', 'Submit'],
             disabledClickPatterns: [], language: 'vi', clickStats: _clickStats, totalClicks: _totalClicks,
             version: context.extension?.packageJSON?.version || '0.0.0',
             serverPort: _actualPort || 0, scriptInjected: isScriptInjected(),
@@ -1039,7 +1039,7 @@ function startHttpServer() {
         const cfg = vscode.workspace.getConfiguration('ag-auto');
         const patternState = resolveClickPatternState(
             _extensionContext,
-            cfg.get('clickPatterns', ['Allow', 'Always Allow', 'Run', 'Keep Waiting', 'Accept', 'Approve', 'Always Approve', 'Approve Once', 'Allow Session', 'Yes', 'Yes, and always allow', 'Yes, allow this time']),
+            cfg.get('clickPatterns', ['Allow', 'Always Allow', 'Run', 'Keep Waiting', 'Accept', 'Approve', 'Always Approve', 'Approve Once', 'Allow Session', 'Yes', 'Yes, and always allow', 'Yes, allow this time', 'Submit']),
             { mergeDefaults: true }
         );
         _httpClickPatterns = patternState.activePatterns;

@@ -44,7 +44,7 @@
     var PAUSE_SCROLL_MS = /*{{PAUSE_SCROLL_MS}}*/7000;
     var CLICK_INTERVAL_MS = /*{{CLICK_INTERVAL_MS}}*/1000;
     var SCROLL_INTERVAL_MS = /*{{SCROLL_INTERVAL_MS}}*/500;
-    var CLICK_PATTERNS = /*{{CLICK_PATTERNS}}*/["Allow", "Always Allow", "Allow in Workspace", "Run", "Keep Waiting", "Accept all", "Approve", "Always Approve", "Approve Once", "Allow Session", "Yes", "Yes, and always allow", "Yes, allow this time"];
+    var CLICK_PATTERNS = /*{{CLICK_PATTERNS}}*/["Allow", "Always Allow", "Allow in Workspace", "Run", "Keep Waiting", "Accept all", "Approve", "Always Approve", "Approve Once", "Allow Session", "Yes", "Yes, and always allow", "Yes, allow this time", "Submit"];
     var CLICK_LIMITS = {}; // { pattern: maxClicks } — 0 or missing = unlimited
     var _agPatternClickCounts = {}; // { pattern: currentCount }
 
@@ -922,7 +922,7 @@
 
         // STRATEGY: Find a visible Submit button — that's the most reliable signal
         // that a permission dialog is open. Then find the best positive option near it.
-        var allBtns = Array.from(document.querySelectorAll('button, [role="button"]'));
+        var allBtns = Array.from(document.querySelectorAll('button, a.action-label, [role="button"], .monaco-button, span.bg-ide-button-background, [class*="ide-button"], input[type="submit"], input[type="button"], div[class*="button"], span[class*="button"]'));
         var submitBtn = null;
         for (var j = 0; j < allBtns.length; j++) {
             var btnTxt = (allBtns[j].innerText || allBtns[j].textContent || '').trim();
@@ -996,7 +996,7 @@
         // Click Submit after 300ms
         setTimeout(function () {
             // Re-find Submit in case DOM changed
-            var btns2 = Array.from(document.querySelectorAll('button, [role="button"]'));
+            var btns2 = Array.from(document.querySelectorAll('button, a.action-label, [role="button"], .monaco-button, span.bg-ide-button-background, [class*="ide-button"], input[type="submit"], input[type="button"], div[class*="button"], span[class*="button"]'));
             var sub2 = null;
             for (var k = 0; k < btns2.length; k++) {
                 var t2 = (btns2[k].innerText || btns2[k].textContent || '').trim();
