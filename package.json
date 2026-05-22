@@ -150,7 +150,10 @@
                         "Approve",
                         "Always Approve",
                         "Approve Once",
-                        "Allow Session"
+                        "Allow Session",
+                        "Yes",
+                        "Yes, and always allow",
+                        "Yes, allow this time"
                     ],
                     "description": "🎯 Danh sách nhãn nút sẽ được tự động click"
                 },

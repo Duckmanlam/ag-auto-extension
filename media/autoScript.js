@@ -44,7 +44,7 @@
     var PAUSE_SCROLL_MS = /*{{PAUSE_SCROLL_MS}}*/7000;
     var CLICK_INTERVAL_MS = /*{{CLICK_INTERVAL_MS}}*/1000;
     var SCROLL_INTERVAL_MS = /*{{SCROLL_INTERVAL_MS}}*/500;
-    var CLICK_PATTERNS = /*{{CLICK_PATTERNS}}*/["Allow", "Always Allow", "Allow in Workspace", "Run", "Keep Waiting", "Accept all", "Approve", "Always Approve", "Approve Once", "Allow Session"];
+    var CLICK_PATTERNS = /*{{CLICK_PATTERNS}}*/["Allow", "Always Allow", "Allow in Workspace", "Run", "Keep Waiting", "Accept all", "Approve", "Always Approve", "Approve Once", "Allow Session", "Yes", "Yes, and always allow", "Yes, allow this time"];
     var CLICK_LIMITS = {}; // { pattern: maxClicks } — 0 or missing = unlimited
     var _agPatternClickCounts = {}; // { pattern: currentCount }
 
